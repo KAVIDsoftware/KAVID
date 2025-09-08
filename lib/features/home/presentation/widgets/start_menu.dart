@@ -14,83 +14,113 @@ class StartMenu extends StatelessWidget {
     required this.onSettings,
   });
 
-  static const Color orange = Color(0xFFFF9800); // mismo que el splash
-  static const double tileSize = 120;           // tamaño medio acordado
-  static const double gap = 16;
+  static const Color orange = Color(0xFFFF9800);
   static const double radius = 18;
 
-  Widget _squareButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return SizedBox(
-      width: tileSize,
-      height: tileSize,
-      child: Material(
-        color: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius),
-          side: const BorderSide(color: Colors.white, width: 2),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(radius),
-          onTap: onTap,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 2),
-                const Icon(Icons.circle, size: 0), // fuerza raster para ripple uniforme
-                Icon(icon, size: 36, color: Colors.white),
-                const SizedBox(height: 8),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    letterSpacing: .2,
-                  ),
-                ),
-              ],
-            ),
+  @override
+  Widget build(BuildContext context) {
+    final items = <_MenuItem>[
+      _MenuItem('Nuevo libro', Icons.note_add_rounded, onNewBook),
+      _MenuItem('Vista general', Icons.dashboard_rounded, onOverview),
+      _MenuItem('Entrar a hojas', Icons.grid_on_rounded, onOpenSheets),
+      _MenuItem('Ajustes', Icons.settings_rounded, onSettings),
+      _MenuItem('Calendario', Icons.calendar_month_rounded,
+              () => _toast(context, 'Calendario (próximamente)')),
+      _MenuItem('Usuario', Icons.person_rounded,
+              () => _toast(context, 'Usuario (próximamente)')),
+      _MenuItem('Coach', Icons.psychology_rounded,
+              () => _toast(context, 'Coach (próximamente)')),
+      _MenuItem('Recordatorios', Icons.notifications_active_rounded,
+              () => _toast(context, 'Recordatorios (próximamente)')),
+      _MenuItem('Gastos diarios', Icons.receipt_long_rounded,
+              () => _toast(context, 'Gastos diarios (próximamente)')),
+    ];
+
+    return Container(
+      color: orange,
+      padding: const EdgeInsets.all(16),
+      alignment: Alignment.center,
+      child: Center(
+        child: SizedBox(
+          width: 3 * 110 + 2 * 16, // ancho de 3 botones + separación
+          child: GridView.count(
+            shrinkWrap: true, // <-- esto centra verticalmente
+            crossAxisCount: 3,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            children: items.map((item) {
+              return _SquareButton(
+                label: item.label,
+                icon: item.icon,
+                onTap: item.onTap,
+              );
+            }).toList(),
           ),
         ),
       ),
     );
   }
 
+  static void _toast(BuildContext context, String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        duration: const Duration(milliseconds: 1000),
+      ),
+    );
+  }
+}
+
+class _SquareButton extends StatelessWidget {
+  const _SquareButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
-    // Bloque 2x2 centrado verticalmente
-    final double blockHeight = tileSize * 2 + gap;
-    final double blockWidth = tileSize * 2 + gap;
-
-    return Container(
-      color: orange,
-      padding: const EdgeInsets.all(16),
-      alignment: Alignment.center,
-      child: SizedBox(
-        height: blockHeight,
-        width: blockWidth,
-        child: Wrap(
-          alignment: WrapAlignment.center,
-          runAlignment: WrapAlignment.center,
-          spacing: gap,
-          runSpacing: gap,
-          children: [
-            // Orden acordado:
-            // [ Nuevo libro ] [ Vista general ]
-            // [ Entrar a hojas ] [ Ajustes ]
-            _squareButton(icon: Icons.add_box,       label: 'Nuevo libro',     onTap: onNewBook),
-            _squareButton(icon: Icons.battery_full,  label: 'Vista general',   onTap: onOverview),
-            _squareButton(icon: Icons.grid_on,       label: 'Entrar a hojas',  onTap: onOpenSheets),
-            _squareButton(icon: Icons.settings,      label: 'Ajustes',         onTap: onSettings),
-          ],
+    return Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(StartMenu.radius),
+        side: const BorderSide(color: Colors.white, width: 2),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(StartMenu.radius),
+        onTap: onTap,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 2),
+              const Icon(Icons.circle, size: 0),
+              Icon(icon, size: 32, color: Colors.white),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _MenuItem {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  _MenuItem(this.label, this.icon, this.onTap);
 }

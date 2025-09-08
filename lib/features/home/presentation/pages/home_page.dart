@@ -36,7 +36,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: orange,         // fondo naranja como pediste
+      backgroundColor: orange,
       body: SafeArea(
         child: StartMenu(
           onNewBook: () => _newBook(context),
