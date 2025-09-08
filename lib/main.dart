@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
-import 'features/splash/presentation/pages/splash_page.dart';
+import 'features/splash/presentation/pages/boot_loader_page.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const KavidApp());
+  runApp(const MyApp());
 }
 
-class KavidApp extends StatelessWidget {
-  const KavidApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'KAVID',
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashPage(),
+      title: 'KAVID',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFFF9800)),
+        useMaterial3: true,
+      ),
+      home: const BootLoaderPage(), // ← arranque directo aquí
     );
   }
 }
