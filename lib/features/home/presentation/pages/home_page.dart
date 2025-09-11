@@ -9,9 +9,9 @@ class HomePage extends StatelessWidget {
 
   static const Color orange = Color(0xFFFF9800);
 
-  void _newBook(BuildContext context) {
+  void _openArchivador(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Nuevo libro (próximamente)')),
+      const SnackBar(content: Text('Archivador (próximamente)')),
     );
   }
 
@@ -33,16 +33,51 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  void _openCalendario(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Calendario (próximamente)')),
+    );
+  }
+
+  void _openUsuario(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Usuario (próximamente)')),
+    );
+  }
+
+  void _openCoach(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Coach (próximamente)')),
+    );
+  }
+
+  void _openRecordatorios(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Recordatorios (próximamente)')),
+    );
+  }
+
+  void _openGastos(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Gastos diarios (próximamente)')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: orange,
       body: SafeArea(
         child: StartMenu(
-          onNewBook: () => _newBook(context),
-          onOverview: () => _openOverview(context),
-          onOpenSheets: () => _openSheets(context),
-          onSettings: () => _openSettings(context),
+          onArchivador:   () => _openArchivador(context), // antes onNewBook
+          onVistaGeneral: () => _openOverview(context),    // antes onOverview
+          onEntrarHojas:  () => _openSheets(context),      // antes onOpenSheets
+          onAjustes:      () => _openSettings(context),    // antes onSettings
+          onCalendario:   () => _openCalendario(context),
+          onUsuario:      () => _openUsuario(context),
+          onCoach:        () => _openCoach(context),
+          onRecordatorios:() => _openRecordatorios(context),
+          onGastosDiarios:() => _openGastos(context),
         ),
       ),
     );
