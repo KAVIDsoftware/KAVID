@@ -12,6 +12,11 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
 
+  # === NUEVO: necesarias para Usuario + Splash ===
+  image_picker: ^1.1.2          # seleccionar foto (cámara/galería)
+  shared_preferences: ^2.2.3     # guardar nombre/correo/teléfono
+  path_provider: ^2.1.4          # guardar imagen en documentos de la app
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

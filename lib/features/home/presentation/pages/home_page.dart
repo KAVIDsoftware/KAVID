@@ -3,11 +3,10 @@ import '../widgets/start_menu.dart';
 import '../widgets/cells_preview.dart';
 import '../widgets/kavid_appbar.dart';
 import 'general_overview_page.dart';
+import 'package:kavid/features/home/presentation/pages/usuario_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
-
-  static const Color orange = Color(0xFFFF9800);
 
   void _openArchivador(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -40,8 +39,8 @@ class HomePage extends StatelessWidget {
   }
 
   void _openUsuario(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Usuario (próximamente)')),
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const UsuarioPage()),
     );
   }
 
@@ -66,18 +65,18 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: orange,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: StartMenu(
-          onArchivador:   () => _openArchivador(context), // antes onNewBook
-          onVistaGeneral: () => _openOverview(context),    // antes onOverview
-          onEntrarHojas:  () => _openSheets(context),      // antes onOpenSheets
-          onAjustes:      () => _openSettings(context),    // antes onSettings
-          onCalendario:   () => _openCalendario(context),
-          onUsuario:      () => _openUsuario(context),
-          onCoach:        () => _openCoach(context),
-          onRecordatorios:() => _openRecordatorios(context),
-          onGastosDiarios:() => _openGastos(context),
+          onArchivador:    () => _openArchivador(context),
+          onVistaGeneral:  () => _openOverview(context),
+          onEntrarHojas:   () => _openSheets(context),
+          onAjustes:       () => _openSettings(context),
+          onCalendario:    () => _openCalendario(context),
+          onUsuario:       () => _openUsuario(context),
+          onCoach:         () => _openCoach(context),
+          onRecordatorios: () => _openRecordatorios(context),
+          onGastosDiarios: () => _openGastos(context),
         ),
       ),
     );
@@ -85,7 +84,6 @@ class HomePage extends StatelessWidget {
 }
 
 // --------- Páginas internas simples ---------
-
 class _SheetsPage extends StatelessWidget {
   const _SheetsPage();
 
@@ -94,6 +92,7 @@ class _SheetsPage extends StatelessWidget {
     return Scaffold(
       appBar: const KavidAppBar(),
       body: const CellsPreview(columns: 7, rows: 18),
+      backgroundColor: Colors.white,
     );
   }
 }
@@ -106,6 +105,7 @@ class _SettingsPage extends StatelessWidget {
     return const Scaffold(
       appBar: KavidAppBar(),
       body: Center(child: Text('Ajustes (en construcción)')),
+      backgroundColor: Colors.white,
     );
   }
 }
