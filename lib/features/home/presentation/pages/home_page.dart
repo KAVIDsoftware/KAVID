@@ -1,8 +1,9 @@
+// lib/features/home/presentation/pages/home_page.dart
 import 'package:flutter/material.dart';
 import '../widgets/start_menu.dart';
 import '../widgets/cells_preview.dart';
 import '../widgets/kavid_appbar.dart';
-import 'general_overview_page.dart';
+import 'package:kavid/features/vista_general/presentation/pages/vista_general_page.dart';
 import 'package:kavid/features/home/presentation/pages/usuario_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -16,7 +17,7 @@ class HomePage extends StatelessWidget {
 
   void _openOverview(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const GeneralOverviewPage()),
+      MaterialPageRoute(builder: (_) => const VistaGeneralPage()),
     );
   }
 
