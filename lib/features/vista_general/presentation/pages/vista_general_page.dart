@@ -1,80 +1,107 @@
-// lib/features/vista_general/presentation/pages/vista_general_page.dart
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Widgets de Vista General
+// === Tarjetas (Tema 5A) ===
 import '../widgets/estado_global_hojas_card.dart';
 import '../widgets/gastos_mes_hoy.dart';
 import '../widgets/saldo_actual_card.dart';
 import '../widgets/prestamos_tarjetas_card.dart';
 import '../widgets/evolucion_hojas_card.dart';
-import '../widgets/actividad_reciente.dart';
+import '../widgets/actividad_reciente.dart'; // <- define ActividadReciente
 import '../widgets/alertas_activas_card.dart';
 import '../widgets/tip_del_dia_card.dart';
 
-class VistaGeneralPage extends StatelessWidget {
+/// Vista general (Dashboard informativo)
+/// - Saludo con nombre guardado (SharedPreferences, clave 'user_name').
+/// - Fecha real del sistema en español.
+/// - Tarjetas informativas (Tema 5A).
+class VistaGeneralPage extends StatefulWidget {
   const VistaGeneralPage({super.key});
 
   @override
+  State<VistaGeneralPage> createState() => _VistaGeneralPageState();
+}
+
+class _VistaGeneralPageState extends State<VistaGeneralPage> {
+  String _userName = 'Usuario';
+  late String _todayStr;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fecha real (es_ES ya inicializado en main.dart)
+    _todayStr = DateFormat.yMMMMEEEEd('es_ES').format(DateTime.now());
+    _loadUserName();
+  }
+
+  /// Carga el nombre desde SharedPreferences (clave: 'user_name').
+  Future<void> _loadUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString('user_name');
+    if (!mounted) return;
+    setState(() {
+      _userName = (saved == null || saved.trim().isEmpty) ? 'Usuario' : saved;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final headline = theme.textTheme.headlineMedium?.copyWith(
+      fontWeight: FontWeight.w800,
+      color: Colors.black87,
+    );
+    final sub = theme.textTheme.titleMedium?.copyWith(
+      color: Colors.black54,
+      fontWeight: FontWeight.w500,
+    );
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Vista general'),
+        centerTitle: true,
+      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Buenos días Usuario',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black87,
-                  ),
-                ),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          children: [
+            // ===== Encabezado con saludo + fecha real =====
+            Text('Buenos días $_userName', style: headline),
+            const SizedBox(height: 8),
+            Text(_todayStr, style: sub),
+            const SizedBox(height: 16),
+            const Divider(height: 1),
+            const SizedBox(height: 12),
+            Text(
+              'Aquí tienes tu resumen general',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: Colors.black87,
               ),
-              const SizedBox(height: 6),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'viernes, 12 de septiembre de 2025',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black54,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Aquí tienes tu resumen general',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Divider(height: 1, thickness: 1),
+            ),
+            const SizedBox(height: 16),
 
-              // Bloques (deja cada constructor como const)
-              const EstadoGlobalHojasCard(),
-              const GastosMesHoyCard(),
-              const SaldoActualCard(),
-              const PrestamosTarjetasCard(),
-              const EvolucionHojasCard(),
-              const ActividadReciente(),
-              const AlertasActivasCard(),
-              const TipDelDiaCard(),
+            // ===== Tarjetas informativas (Tema 5A) =====
+            EstadoGlobalHojasCard(),
+            const SizedBox(height: 12),
+            GastosMesHoyCard(),
+            const SizedBox(height: 12),
+            SaldoActualCard(),
+            const SizedBox(height: 12),
+            PrestamosTarjetasCard(),
+            const SizedBox(height: 12),
+            EvolucionHojasCard(),
+            const SizedBox(height: 12),
 
-              const SizedBox(height: 24),
-            ],
-          ),
+            // 🔧 Aquí estaba el fallo: la clase correcta es ActividadReciente (no ...Card)
+            ActividadReciente(),
+            const SizedBox(height: 12),
+
+            AlertasActivasCard(),
+            const SizedBox(height: 12),
+            TipDelDiaCard(),
+          ],
         ),
       ),
     );
