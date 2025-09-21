@@ -72,7 +72,7 @@ class _BootLoaderPageState extends State<BootLoaderPage>
                         decoration: BoxDecoration(
                           color: on
                               ? Colors.white
-                              : Colors.white.withOpacity(0.35),
+                              : Colors.white.withValues(alpha: 0.35),
                           shape: BoxShape.circle,
                         ),
                       );
@@ -90,7 +90,7 @@ class _BootLoaderPageState extends State<BootLoaderPage>
 
 /// Logotipo en código: “K A [círculo blanco con check naranja] I D”
 class _KavidWordmark extends StatelessWidget {
-  const _KavidWordmark({super.key, this.size = 112});
+  const _KavidWordmark({this.size = 112});
 
   final double size; // altura aproximada del conjunto
   static const orange = Color(0xFFFF9800);

@@ -13,10 +13,17 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # === Usuario + Splash + Vista General ===
-  image_picker: ^1.1.2          # seleccionar foto (cámara/galería)
+  image_picker: ^1.1.2           # seleccionar foto (cámara/galería)
   shared_preferences: ^2.2.3     # guardar nombre/correo/teléfono
   path_provider: ^2.1.4          # guardar imagen en documentos de la app
-  intl: ^0.19.0                  # fechas y formatos en español (Vista General)
+  intl: ^0.19.0                  # fechas y formatos en español (Vista General + Gastos)
+
+  # === Gastos diarios (Tema 6) ===
+  google_mlkit_text_recognition: ^0.14.0  # OCR para tickets
+  uuid: ^4.4.2                            # generar IDs únicas para los gastos
+
+  # === Calendario (Tema 6) ===
+  table_calendar: ^3.0.9        # mostrar calendario personalizado
 
 dev_dependencies:
   flutter_test:
@@ -27,7 +34,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # (Opcional pero recomendado) habilita carpeta general de recursos
   assets:
     - assets/
 

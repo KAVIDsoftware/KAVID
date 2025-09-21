@@ -1,10 +1,14 @@
 // lib/features/home/presentation/pages/home_page.dart
 import 'package:flutter/material.dart';
+
 import '../widgets/start_menu.dart';
 import '../widgets/cells_preview.dart';
 import '../widgets/kavid_appbar.dart';
+
+// Rutas reales según tu estructura de carpetas:
 import 'package:kavid/features/vista_general/presentation/pages/vista_general_page.dart';
 import 'package:kavid/features/home/presentation/pages/usuario_page.dart';
+import 'package:kavid/features/calendar/presentation/pages/calendar_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -34,8 +38,8 @@ class HomePage extends StatelessWidget {
   }
 
   void _openCalendario(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Calendario (próximamente)')),
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const CalendarPage()),
     );
   }
 
@@ -57,10 +61,9 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // 🔶 AHORA NAVEGA A LA RUTA CON NOMBRE
   void _openGastos(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Gastos diarios (próximamente)')),
-    );
+    Navigator.of(context).pushNamed('/gastos-diarios');
   }
 
   @override
@@ -77,14 +80,14 @@ class HomePage extends StatelessWidget {
           onUsuario:       () => _openUsuario(context),
           onCoach:         () => _openCoach(context),
           onRecordatorios: () => _openRecordatorios(context),
-          onGastosDiarios: () => _openGastos(context),
+          onGastosDiarios: () => _openGastos(context), // ✅ ahora navega
         ),
       ),
     );
   }
 }
 
-// --------- Páginas internas simples ---------
+// --------- Páginas internas simples (no crear otro MaterialApp) ---------
 class _SheetsPage extends StatelessWidget {
   const _SheetsPage();
 

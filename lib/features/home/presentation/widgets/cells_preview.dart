@@ -17,7 +17,7 @@ class CellsPreview extends StatelessWidget {
     const aspect = 1.6; // rectangular tipo móvil
 
     return Container(
-      color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
       child: GridView.builder(
         padding: const EdgeInsets.all(8),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -33,7 +33,7 @@ class CellsPreview extends StatelessWidget {
               color: theme.colorScheme.surface,
               border: Border.all(
                 width: 0.8,
-                color: theme.dividerColor.withOpacity(0.6),
+                color: theme.dividerColor.withValues(alpha: 0.6),
               ),
             ),
             child: const SizedBox.expand(),

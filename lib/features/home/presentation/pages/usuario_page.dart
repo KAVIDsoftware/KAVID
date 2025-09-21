@@ -178,7 +178,7 @@ class _UsuarioPageState extends State<UsuarioPage> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
+                                color: Colors.black.withValues(alpha: 0.06),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -210,7 +210,6 @@ class _UsuarioPageState extends State<UsuarioPage> {
                 ),
                 const SizedBox(height: 12),
 
-                // Campos responsivos sin overflow
                 LayoutBuilder(
                   builder: (context, constraints) {
                     const gap = 12.0;
@@ -264,7 +263,6 @@ class _UsuarioPageState extends State<UsuarioPage> {
 
                 const SizedBox(height: 20),
 
-                // Botón Guardar
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -278,7 +276,10 @@ class _UsuarioPageState extends State<UsuarioPage> {
                     ),
                     child: _saving
                         ? const SizedBox(
-                        height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
                         : const Text('Guardar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                 ),
@@ -305,7 +306,7 @@ class _CardContainer extends StatelessWidget {
         border: Border.all(color: const Color(0xFFF0F0F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
