@@ -1,3 +1,4 @@
+// lib/features/gastos diarios/data/local/gastos_local_store.dart
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -5,7 +6,7 @@ class Ticket {
   final String id;
   final String merchant;
   final double amount;
-  final DateTime date; // normalizado (sin hora)
+  final DateTime date;
   final String? imagePath;
 
   const Ticket({
@@ -62,7 +63,6 @@ class GastosLocalStore {
     final list = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
     final items = list.map((e) => Ticket.fromJson(e)).toList();
 
-    // Normaliza fechas a yyyy-MM-dd (sin hora)
     return items
         .map((t) => Ticket(
       id: t.id,
@@ -99,10 +99,5 @@ class GastosLocalStore {
     final items = await getAll();
     items.removeWhere((e) => e.id == id);
     await _saveAll(items);
-  }
-
-  Future<void> clearAll() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_kKey);
   }
 }

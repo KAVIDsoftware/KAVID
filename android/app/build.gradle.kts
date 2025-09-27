@@ -8,39 +8,40 @@ plugins {
 android {
     namespace = "com.kavid.kavid"
 
-    // Toma compileSdk/ndk de Flutter (están definidos por el plugin)
+    // Toma compileSdk/ndk de Flutter (definidos por el plugin)
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
-    // Java/Kotlin 11
+    // === Java/Kotlin 17 + Desugaring ===
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = "17"
     }
 
     defaultConfig {
         applicationId = "com.kavid.kavid"
 
-        // ⚠️ Forzamos 21 para MLKit + camera
+        // Min/Target desde Flutter (asegura minSdk >= 21)
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
 
-        // Lee versión desde pubspec.yaml (flutter.versionCode/name lo rellena el plugin)
+        // Lee versión desde pubspec.yaml (lo rellena el plugin)
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // Si usas multidex más adelante:
+        // Si en el futuro necesitas multidex:
         // multiDexEnabled = true
     }
 
     buildTypes {
         release {
-            // Usa firma debug por ahora para que `flutter run --release` funcione
+            // Firma debug para poder ejecutar release local
             signingConfig = signingConfigs.getByName("debug")
-            // Si necesitas shrinker:
+            // Si algún día activas shrinker:
             // isMinifyEnabled = true
             // proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -49,4 +50,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// === Desugar JDK libs para Java APIs usadas por plugins como flutter_local_notifications ===
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }
