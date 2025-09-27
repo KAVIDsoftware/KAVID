@@ -1,40 +1,48 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // El plugin de Flutter SIEMPRE después de los de Android/Kotlin
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
     namespace = "com.kavid.kavid"
+
+    // Toma compileSdk/ndk de Flutter (están definidos por el plugin)
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
+    // Java/Kotlin 11
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.kavid.kavid"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+
+        // ⚠️ Forzamos 21 para MLKit + camera
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
+
+        // Lee versión desde pubspec.yaml (flutter.versionCode/name lo rellena el plugin)
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Si usas multidex más adelante:
+        // multiDexEnabled = true
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Usa firma debug por ahora para que `flutter run --release` funcione
             signingConfig = signingConfigs.getByName("debug")
+            // Si necesitas shrinker:
+            // isMinifyEnabled = true
+            // proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }

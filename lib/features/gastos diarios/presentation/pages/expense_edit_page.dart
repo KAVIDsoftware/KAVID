@@ -1,254 +1,259 @@
-import 'dart:io'; // <-- NECESARIO para usar File
+// lib/features/gastos diarios/presentation/pages/expense_edit_page.dart
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
-import '../../data/models/expense_entry.dart';
-
-const kOrange = Color(0xFFFF9800);
+import '../../../gastos diarios/data/models/expense_entry.dart';
+import '../../data/local/ocr_corrections_store.dart';
 
 class ExpenseEditPage extends StatefulWidget {
+  final ExpenseEntry? initial;
+  final String? imagePath;
+  final File? imageFile;
+  final String? initialMerchant;
+  final double? initialAmount;
+  final DateTime? initialDate;
+  final String? ocrCif;
+  final String? ocrHash;
+
   const ExpenseEditPage({
     super.key,
-    required this.initial,
+    this.initial,
     this.imagePath,
+    this.imageFile,
+    this.initialMerchant,
+    this.initialAmount,
+    this.initialDate,
+    this.ocrCif,
+    this.ocrHash,
   });
-
-  final ExpenseEntry initial;
-  final String? imagePath;
 
   @override
   State<ExpenseEditPage> createState() => _ExpenseEditPageState();
 }
 
 class _ExpenseEditPageState extends State<ExpenseEditPage> {
-  late TextEditingController _merchantCtrl;
-  late TextEditingController _amountCtrl;
-  late TextEditingController _dateCtrl;
-  late TextEditingController _timeCtrl;
-  late DateTime _dateTime;
+  late final TextEditingController _merchantCtrl;
+  late final TextEditingController _amountCtrl;
+  late DateTime _date;
+  File? _image;
+  final _store = const OcrCorrectionsStore();
+
+  bool _has(String? s) => s != null && s.trim().isNotEmpty;
 
   @override
   void initState() {
     super.initState();
-    _merchantCtrl = TextEditingController(text: widget.initial.merchant);
-    _amountCtrl = TextEditingController(
-      text: widget.initial.amount == 0.0
-          ? ''
-          : NumberFormat("#0.00", "es_ES").format(widget.initial.amount),
-    );
-    _dateTime = widget.initial.date;
-    _dateCtrl = TextEditingController(
-      text: DateFormat('dd/MM/yyyy').format(_dateTime),
-    );
-    _timeCtrl = TextEditingController(
-      text: DateFormat('HH:mm').format(_dateTime),
-    );
+    _image = widget.imageFile ?? (_has(widget.imagePath) ? File(widget.imagePath!) : null);
+
+    final a = widget.initial;
+    final merchant = _has(a?.merchant) ? a!.merchant : (_has(widget.initialMerchant) ? widget.initialMerchant! : '');
+    final amount = a?.amount ?? widget.initialAmount ?? 0.0;
+    final date = a?.date ?? widget.initialDate ?? DateUtils.dateOnly(DateTime.now());
+
+    _merchantCtrl = TextEditingController(text: merchant);
+    _amountCtrl = TextEditingController(text: amount == 0.0 ? '' : amount.toStringAsFixed(2));
+    _date = DateUtils.dateOnly(date);
   }
 
   @override
   void dispose() {
     _merchantCtrl.dispose();
     _amountCtrl.dispose();
-    _dateCtrl.dispose();
-    _timeCtrl.dispose();
     super.dispose();
   }
 
+  Future<void> _editField(String title, TextEditingController c, {TextInputType? input}) async {
+    final nav = Navigator.of(context);
+    final res = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        final t = TextEditingController(text: c.text);
+        return AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: t,
+            keyboardType: input,
+            autofocus: true,
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(null), child: const Text('Cancelar')),
+            ElevatedButton(onPressed: () => Navigator.of(ctx).pop(t.text.trim()), child: const Text('Aceptar')),
+          ],
+        );
+      },
+    );
+    if (!mounted) return;
+    if (res != null) {
+      setState(() => c.text = res);
+      ScaffoldMessenger.of(nav.context).showSnackBar(const SnackBar(content: Text('Campo actualizado')));
+    }
+  }
+
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
+    final d = await showDatePicker(
       context: context,
+      initialDate: _date,
       firstDate: DateTime(2015),
-      lastDate: DateTime(2100),
-      initialDate: _dateTime,
-      helpText: 'Selecciona la fecha del ticket',
-      locale: const Locale('es', 'ES'),
+      lastDate: DateUtils.dateOnly(DateTime.now()),
     );
-    if (picked != null) {
-      setState(() {
-        _dateTime = DateTime(
-          picked.year,
-          picked.month,
-          picked.day,
-          _dateTime.hour,
-          _dateTime.minute,
+    if (d != null) setState(() => _date = DateUtils.dateOnly(d));
+  }
+
+  ExpenseEntry _buildEntry() {
+    final base = widget.initial ??
+        ExpenseEntry(
+          id: DateTime.now().microsecondsSinceEpoch.toString(),
+          merchant: '',
+          description: '',
+          amount: 0.0,
+          date: DateUtils.dateOnly(DateTime.now()),
+          category: 'General',
+          paymentMethod: 'Desconocido',
         );
-        _dateCtrl.text = DateFormat('dd/MM/yyyy').format(_dateTime);
-      });
-    }
-  }
 
-  Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: _dateTime.hour, minute: _dateTime.minute),
-      helpText: 'Selecciona la hora del ticket',
+    final amt = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0.0;
+
+    return ExpenseEntry(
+      id: base.id,
+      merchant: _merchantCtrl.text.trim(),
+      description: base.description,
+      amount: amt,
+      date: _date,
+      category: base.category,
+      paymentMethod: base.paymentMethod,
     );
-    if (picked != null) {
-      setState(() {
-        _dateTime = DateTime(
-          _dateTime.year,
-          _dateTime.month,
-          _dateTime.day,
-          picked.hour,
-          picked.minute,
-        );
-        _timeCtrl.text = DateFormat('HH:mm').format(_dateTime);
-      });
-    }
   }
 
-  void _save() {
-    final merchant = _merchantCtrl.text.trim();
-    final amountStr = _amountCtrl.text.replaceAll('.', '').replaceAll(',', '.').trim();
-    final amount = double.tryParse(amountStr) ?? 0.0;
-
-    if (merchant.isEmpty) {
-      _show('Introduce el establecimiento');
-      return;
+  Future<void> _rememberIfChanged(ExpenseEntry before, ExpenseEntry after) async {
+    if (after.merchant.trim().isEmpty) return;
+    if (before.merchant.trim() == after.merchant.trim()) return;
+    if (_has(widget.ocrCif)) {
+      await _store.saveByCif(widget.ocrCif!, after.merchant.trim());
+    } else if (_has(widget.ocrHash)) {
+      await _store.saveByHash(widget.ocrHash!, after.merchant.trim());
     }
-    if (amount <= 0) {
-      _show('Introduce un importe válido');
-      return;
-    }
-
-    // === Crear ExpenseEntry actualizado SIN copyWith ===
-    // ⚠️ NECESITO tu constructor real de ExpenseEntry para rellenarlo correctamente.
-    // Ejemplo típico (ajustaré cuando me pases el modelo):
-    final updated = ExpenseEntry(
-      id: widget.initial.id,
-      merchant: merchant,
-      description: widget.initial.description,
-      amount: amount,
-      date: _dateTime,
-      category: widget.initial.category,
-      paymentMethod: widget.initial.paymentMethod,
-    );
-
-    Navigator.of(context).pop(updated);
-  }
-
-  void _show(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: kOrange,
-        foregroundColor: Colors.white,
-        title: const Text('Editar gasto'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          if (widget.imagePath != null)
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: kOrange),
-              ),
-              clipBehavior: Clip.hardEdge,
-              child: Image.file(
-                File(widget.imagePath!),
-                fit: BoxFit.cover,
-                height: 200,
-              ),
-            ),
-          const SizedBox(height: 16),
-
-          Text('Establecimiento', style: _labelStyle),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _merchantCtrl,
-            textInputAction: TextInputAction.next,
-            decoration: _inputDecoration('Introduce el nombre del comercio'),
+    final nav = Navigator.of(context);
+    return PopScope(
+      canPop: true, // reemplaza WillPopScope
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Escanear ticket'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => nav.pop(),
           ),
-          const SizedBox(height: 16),
-
-          Text('Importe', style: _labelStyle),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _amountCtrl,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: _inputDecoration('0,00'),
-          ),
-          const SizedBox(height: 16),
-
-          Text('Fecha y hora', style: _labelStyle),
-          const SizedBox(height: 6),
-          Row(
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: TextField(
-                  controller: _dateCtrl,
-                  readOnly: true,
-                  onTap: _pickDate,
-                  decoration: _inputDecoration('dd/mm/aaaa').copyWith(
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.calendar_today),
-                      onPressed: _pickDate,
-                    ),
-                  ),
+              if (_image != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Image.file(_image!, height: 170, fit: BoxFit.cover),
                 ),
+              _RowEdit('Establecimiento', _merchantCtrl, () => _editField('Editar establecimiento', _merchantCtrl)),
+              const SizedBox(height: 12),
+              _RowEdit(
+                'Importe',
+                _amountCtrl,
+                    () => _editField('Editar importe', _amountCtrl, input: const TextInputType.numberWithOptions(decimal: true)),
+                input: const TextInputType.numberWithOptions(decimal: true),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                  controller: _timeCtrl,
-                  readOnly: true,
-                  onTap: _pickTime,
-                  decoration: _inputDecoration('hh:mm').copyWith(
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.access_time),
-                      onPressed: _pickTime,
-                    ),
-                  ),
-                ),
+              const SizedBox(height: 12),
+              _RowDate('Fecha', _date, _pickDate),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () async {
+                  final before = widget.initial ??
+                      ExpenseEntry(
+                        id: '',
+                        merchant: '',
+                        description: '',
+                        amount: 0.0,
+                        date: DateUtils.dateOnly(DateTime.now()),
+                        category: 'General',
+                        paymentMethod: 'Desconocido',
+                      );
+                  final entry = _buildEntry();
+                  await _rememberIfChanged(before, entry);
+                  if (!mounted) return;
+                  nav.pop<ExpenseEntry>(entry);
+                },
+                child: const Text('Guardar gastos'),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+        ),
+      ),
+    );
+  }
+}
 
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: kOrange,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              onPressed: _save,
-              icon: const Icon(Icons.save),
-              label: const Text(
-                'Guardar gastos',
-                style: TextStyle(fontWeight: FontWeight.bold),
+class _RowEdit extends StatelessWidget {
+  final String title;
+  final TextEditingController controller;
+  final VoidCallback onChange;
+  final TextInputType? input;
+  const _RowEdit(this.title, this.controller, this.onChange, {this.input});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: controller,
+                keyboardType: input,
+                decoration: const InputDecoration(border: OutlineInputBorder()),
               ),
             ),
-          ),
-        ],
-      ),
+            const SizedBox(width: 8),
+            OutlinedButton(onPressed: onChange, child: const Text('Cambiar')),
+          ],
+        ),
+      ],
     );
   }
+}
 
-  InputDecoration _inputDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      enabledBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: kOrange, width: 1),
-        borderRadius: BorderRadius.zero,
-      ),
-      focusedBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: kOrange, width: 2),
-        borderRadius: BorderRadius.zero,
-      ),
+class _RowDate extends StatelessWidget {
+  final String title;
+  final DateTime date;
+  final VoidCallback onTap;
+  const _RowDate(this.title, this.date, this.onTap);
+
+  @override
+  Widget build(BuildContext context) {
+    final txt = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Expanded(
+              child: InputDecorator(
+                decoration: const InputDecoration(border: OutlineInputBorder()),
+                child: Text(txt),
+              ),
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton(onPressed: onTap, child: const Text('Cambiar')),
+          ],
+        ),
+      ],
     );
   }
-
-  TextStyle get _labelStyle => const TextStyle(
-    fontWeight: FontWeight.w600,
-    color: kOrange,
-  );
 }
